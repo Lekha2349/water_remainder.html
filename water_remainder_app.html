@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Water Reminder App</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #e0f7fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      text-align: center;
+      width: 90%;
+      max-width: 500px;
+    }
+
+    h1 {
+      margin-bottom: 1rem;
+      color: #00796b;
+    }
+
+    .time-setter input, button {
+      margin: 0.5rem;
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+
+    button {
+      background: #00796b;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #004d40;
+    }
+
+    .tracker {
+      margin-top: 2rem;
+    }
+
+    #status {
+      margin-top: 1rem;
+      color: #00695c;
+      font-weight: bold;
+    }
+
+    .yesterday {
+      margin-top: 1rem;
+      font-size: 1rem;
+      color: #555;
+    }
+
+    .calendar {
+      margin-top: 2rem;
+      text-align: left;
+    }
+
+    .calendar h3 {
+      color: #004d40;
+      margin-bottom: 0.5rem;
+    }
+
+    .calendar ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .calendar li {
+      padding: 5px 0;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .calendar .date {
+      font-weight: bold;
+    }
+
+    .calendar .count {
+      float: right;
+      color: #00796b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>💧 Water Reminder</h1>
+
+    <div class="time-setter">
+      <label>Start Time:
+        <input type="time" id="startTime">
+      </label>
+      <label>End Time:
+        <input type="time" id="endTime">
+      </label>
+      <button id="startBtn">Start Reminders</button>
+    </div>
+
+    <div class="tracker">
+      <h2>Today's Bottles: <span id="bottleCount">0</span></h2>
+      <button id="addGlass">+1 Glass</button>
+      <p class="yesterday" id="yesterdayInfo">Yesterday: 0 bottles</p>
+    </div>
+
+    <div class="calendar">
+      <h3>📅 Last 7 Days</h3>
+      <ul id="calendarList"></ul>
+    </div>
+
+    <p id="status"></p>
+  </div>
+
+  <script>
+    const GLASSES_PER_BOTTLE = 4;
+    let intervalId;
+
+    window.onload = () => {
+      checkReset();
+      updateTodayDisplay();
+      updateCalendar();
+      showYesterdayBottles();
+    };
+
+    document.getElementById("startBtn").onclick = () => {
+      const start = document.getElementById("startTime").value;
+      const end = document.getElementById("endTime").value;
+
+      if (!start || !end) {
+        alert("Please select both start and end times.");
+        return;
+      }
+
+      Notification.requestPermission().then(permission => {
+        if (permission !== "granted") {
+          alert("Please allow notifications to receive reminders.");
+          return;
+        }
+
+        startReminders(start, end);
+      });
+    };
+
+    document.getElementById("addGlass").onclick = () => {
+      const today = new Date().toDateString();
+      let log = JSON.parse(localStorage.getItem("log") || "{}");
+      log[today] = (log[today] || 0) + 1;
+      localStorage.setItem("log", JSON.stringify(log));
+      updateTodayDisplay();
+      updateCalendar();
+    };
+
+    function updateTodayDisplay() {
+      const today = new Date().toDateString();
+      const log = JSON.parse(localStorage.getItem("log") || "{}");
+      const glasses = log[today] || 0;
+      const bottles = Math.floor(glasses / GLASSES_PER_BOTTLE);
+      document.getElementById("bottleCount").innerText = bottles;
+    }
+
+    function showYesterdayBottles() {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const dateStr = yesterday.toDateString();
+      const log = JSON.parse(localStorage.getItem("log") || "{}");
+      const glasses = log[dateStr] || 0;
+      const bottles = Math.floor(glasses / GLASSES_PER_BOTTLE);
+      document.getElementById("yesterdayInfo").innerText = `Yesterday: ${bottles} bottle${bottles !== 1 ? "s" : ""}`;
+    }
+
+    function updateCalendar() {
+      const log = JSON.parse(localStorage.getItem("log") || "{}");
+      const list = document.getElementById("calendarList");
+      list.innerHTML = "";
+
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toDateString();
+        const glasses = log[dateStr] || 0;
+        const bottles = Math.floor(glasses / GLASSES_PER_BOTTLE);
+
+        const li = document.createElement("li");
+        li.innerHTML = `<span class="date">${dateStr}</span> <span class="count">${bottles} bottle${bottles !== 1 ? "s" : ""}</span>`;
+        list.appendChild(li);
+      }
+    }
+
+    function startReminders(start, end) {
+      const now = new Date();
+      const startTime = getTodayTime(start);
+      const endTime = getTodayTime(end);
+
+      if (now > endTime) {
+        document.getElementById('status').innerText = "End time has already passed for today.";
+        return;
+      }
+
+      const delay = Math.max(0, startTime - now);
+
+      setTimeout(() => {
+        showReminder();
+        intervalId = setInterval(() => {
+          const current = new Date();
+          if (current >= startTime && current <= endTime) {
+            showReminder();
+          }
+        }, 60 * 60 * 1000);
+      }, delay);
+
+      document.getElementById('status').innerText = "Reminders set!";
+    }
+
+    function showReminder() {
+      new Notification("💧 Time to drink water!");
+    }
+
+    function getTodayTime(timeStr) {
+      const [hour, minute] = timeStr.split(":");
+      const now = new Date();
+      now.setHours(hour);
+      now.setMinutes(minute);
+      now.setSeconds(0);
+      now.setMilliseconds(0);
+      return now;
+    }
+
+    function checkReset() {
+      const lastDate = localStorage.getItem("lastDate");
+      const today = new Date().toDateString();
+
+      if (lastDate !== today) {
+        localStorage.setItem("lastDate", today);
+      }
+    }
+  </script>
+</body>
+</html>
