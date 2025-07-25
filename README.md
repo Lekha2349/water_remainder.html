@@ -1,19 +1,34 @@
+# 💧 Water Reminder Web App
 
-💧 Water Reminder Web App
-This is a simple, responsive water reminder and tracking web application built using HTML, CSS, and JavaScript. It helps you stay hydrated by sending hourly browser notifications between your chosen start and end times, and also tracks your daily water intake in terms of glasses and bottles.
+This web app helps you stay hydrated by reminding you to drink water at regular intervals. Built using HTML, CSS, and JavaScript, it allows you to:
 
-🚀 Features
-✅ Set Start and End Time for daily reminders
+- Set start and end time for reminders
+- Track daily water intake
+- View past 7 days’ history
+- Add glasses manually
 
-🔔 Hourly Browser Notifications within your set time range
+---
 
-🥤 Add Water Intake with a button (1 glass = 1 click)
+## 🚀 Demo Video
 
-🍼 Auto-calculates bottles (1 bottle = 4 glasses)
+🎥 [Click here to watch the demo](https://github.com/Lekha2349/water_remainer.html/issues/1)
 
-📅 Tracks the last 7 days of water intake
+*(The video is embedded in a GitHub issue due to size limits.)*
 
-📊 Displays yesterday’s count
+---
 
-💾 Data stored in localStorage — no backend required
+
+## 🛠️ Tech Stack
+
+- HTML
+- CSS
+- JavaScript
+
+---
+
+## 📁 How to Run Locally
+
+1. Clone the repo  
+   ```bash
+   git clone https://github.com/Lekha2349/water_remainer.html.git
 
