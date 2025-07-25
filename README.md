@@ -11,7 +11,7 @@ This web app helps you stay hydrated by reminding you to drink water at regular 
 
 ## 🚀 Demo Video
 
-🎥 [Click here to watch the demo](https://github.com/Lekha2349/water_remainer.html/issues/1)
+🎥 [Click here to watch the demo](https://github.com/Lekha2349/water_remainder.html/issues)
 
 *(The video is embedded in a GitHub issue due to size limits.)*
 
